@@ -1,0 +1,38 @@
+{
+  "name": "nextjs-portfolio",
+  "private": true,
+  "description": "My Portfolio using NextJS",
+  "scripts": {
+    "prepare": "husky install",
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint",
+    "format": "prettier --write .",
+    "type-check": "tsc --pretty --noEmit"
+  },
+  "dependencies": {
+    "next": "12.1.4",
+    "react": "18.0.0",
+    "react-dom": "18.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "16.11.10",
+    "@types/react": "18.0.1",
+    "autoprefixer": "^10.4.4",
+    "eslint": "8.13.0",
+    "eslint-config-next": "12.1.4",
+    "husky": "^7.0.4",
+    "lint-staged": "^12.3.7",
+    "postcss": "^8.4.12",
+    "prettier": "^2.6.2",
+    "tailwindcss": "^3.0.23",
+    "typescript": "4.5.5"
+  },
+  "lint-staged": {
+    "*.@(ts|tsx)": [
+      "eslint --fix",
+      "yarn format"
+    ]
+  }
+}
