@@ -54,9 +54,9 @@ const Home: NextPage = () => {
                     </div>
                     <ul className="list-disc ml-4">
                       <li>Develop and maintain Loan Service API</li>
-                      <li>Develop Frontend for Back Office and User facing Loan web application</li>
-                      <li>Develop API and migrate user log-in using SSO</li>
-                      <li>Develop and maintain Auth Service API</li>
+                      <li>Develop Loan Back Office and User Facing web application</li>
+                      <li>Develop API and migrated user log-in using SSO</li>
+                      <li>Develop and maintain Microservice API</li>
                     </ul>
                   </section>
                   <section className="py-3">
@@ -67,13 +67,12 @@ const Home: NextPage = () => {
                       <span>08/2016 - 10/2021</span>
                     </div>
                     <ul className="list-disc ml-4">
-                      <li>Develop and maintain web applications</li>
-                      <li>Develop cache mechanism to handle over fetching</li>
-                      <li>Develop query builder to handle parse and read from nested query</li>
-                      <li>Develop action to automate web application workflows</li>
-                      <li>Develop framework custom web builder</li>
+                      <li>Develop and maintain HR Platform web applications</li>
+                      <li>Optimized web application performance</li>
                       <li>Develop and maintain frontend components</li>
-                      <li>Develop new product features</li>
+                      <li>Develop framework custom web builder</li>
+                      <li>Develop action to automate web application workflows</li>
+                      <li>Develop cache mechanism to handle over fetching</li>
                       <li>Upgrading web framework</li>
                     </ul>
                   </section>
@@ -90,7 +89,7 @@ const Home: NextPage = () => {
                         Develop a web application for check and populate Bank location and resources management data
                         with Google Maps
                       </li>
-                      <li>Develop new product features</li>
+                      <li>Develop HR Platform web application</li>
                     </ul>
                   </section>
                   <section className="py-3">
