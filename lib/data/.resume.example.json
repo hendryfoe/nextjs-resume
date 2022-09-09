@@ -1,0 +1,62 @@
+{
+  "contact": {
+    "name": "John Doe",
+    "phone": "+1 123 456 789",
+    "email": "johndoe@mail.com",
+    "linkedin": "https://www.linkedin.com/in/johndoe",
+    "summary": "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat"
+  },
+  "experiences": [
+    {
+      "companyName": "Test One Ltd",
+      "companyWebsite": "https://acme.com",
+      "title": "Software Engineer",
+      "workingPeriod": "10/2020 - Present",
+      "descriptions": [
+        "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua",
+        "Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum",
+        "At vero eos et accusamus et iusto odio dignissimos ducimus qui blanditiis praesentium voluptatum deleniti atque corrupti quos dolores et quas molestias excepturi sint occaecati cupiditate non provident"
+      ]
+    },
+    {
+      "companyName": "Test Two Inc.",
+      "companyWebsite": "https://acme.com",
+      "title": "Software Engineer",
+      "workingPeriod": "08/2019 - 10/2020",
+      "descriptions": [
+        "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua",
+        "Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum",
+        "At vero eos et accusamus et iusto odio dignissimos ducimus qui blanditiis praesentium voluptatum deleniti atque corrupti quos dolores et quas molestias excepturi sint occaecati cupiditate non provident"
+      ]
+    },
+    {
+      "companyName": "Test Three",
+      "companyWebsite": "https://acme.com",
+      "title": "Software Engineer",
+      "workingPeriod": "08/2017 - 10/2019",
+      "descriptions": [
+        "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua",
+        "Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum",
+        "At vero eos et accusamus et iusto odio dignissimos ducimus qui blanditiis praesentium voluptatum deleniti atque corrupti quos dolores et quas molestias excepturi sint occaecati cupiditate non provident"
+      ]
+    }
+  ],
+  "educations": [
+    {
+      "schoolName": "Schools One",
+      "major": "Bachelor Degree of Information Technology",
+      "year": "2010 - 2014"
+    }
+  ],
+  "technicalSkills": ["Typescript", "Javascript", "React", "HTML"],
+  "projects": [
+    {
+      "name": "Project One",
+      "description": "At vero eos et accusamus et iusto odio dignissimos ducimus qui blanditiis praesentium voluptatum deleniti atque corrupti quos dolores et quas molestias excepturi sint occaecati cupiditate non provident"
+    },
+    {
+      "name": "Project Two",
+      "description": "Et harum quidem rerum facilis est et expedita distinctio. Nam libero tempore, cum soluta nobis est eligendi optio cumque nihil impedit quo minus id quod maxime placeat facere possimus, omnis voluptas assumenda est, omnis dolor repellendus"
+    }
+  ]
+}
