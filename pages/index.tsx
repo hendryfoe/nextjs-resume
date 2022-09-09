@@ -2,7 +2,7 @@ import type { GetStaticProps, NextPage } from 'next';
 import Head from 'next/head';
 import { AiOutlineLinkedin, AiOutlineMail, AiTwotonePhone, AiOutlineCalendar } from 'react-icons/ai';
 
-import resumeData from '../lib/data/resume-data.json';
+import resumeData from '../lib/data/resume.json';
 
 interface Experience {
   companyName: string;
@@ -89,7 +89,7 @@ const Home: NextPage<{ resume: Record<string, any> }> = ({ resume }) => {
                     <section key={index}>
                       <h3 className="text-xl font-semibold">{education.major}</h3>
                       <h4 className="font-semibold text-blue-500">
-                        <a href="https://www.modalrakyat.id">{education.schoolName}</a>
+                        <a>{education.schoolName}</a>
                       </h4>
                       <div className="flex gap-1 text-xs text-gray-500 items-center py-0.5">
                         <AiOutlineCalendar />
@@ -113,17 +113,19 @@ const Home: NextPage<{ resume: Record<string, any> }> = ({ resume }) => {
                   </section>
                 </div>
               </section>
-              <section className="text-sm space-y-1">
-                <h2 className="text-2xl font-bold border-b-2 border-black text-black">PROJECTS</h2>
-                <div className="divide-y space-y-1 divide-dashed divide-slate-300">
-                  {projects.map((project: Project) => (
-                    <section key={project.name} className="first:pt-0 py-3">
-                      <h2 className="font-semibold text-base text-blue-500">{project.name}</h2>
-                      <p className="mr-2">{project.description}</p>
-                    </section>
-                  ))}
-                </div>
-              </section>
+              {projects && (
+                <section className="text-sm space-y-1">
+                  <h2 className="text-2xl font-bold border-b-2 border-black text-black">PROJECTS</h2>
+                  <div className="divide-y space-y-1 divide-dashed divide-slate-300">
+                    {projects.map((project: Project) => (
+                      <section key={project.name} className="first:pt-0 py-3">
+                        <h2 className="font-semibold text-base text-blue-500">{project.name}</h2>
+                        <p className="mr-2">{project.description}</p>
+                      </section>
+                    ))}
+                  </div>
+                </section>
+              )}
             </section>
           </section>
         </div>
