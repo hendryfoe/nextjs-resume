@@ -5,6 +5,7 @@
 @layer base {
   html {
     font-family: 'Open Sans', sans-serif;
+    font-size: 14px;
   }
   body {
     @apply bg-slate-200;
@@ -14,6 +15,13 @@
     body,
     #resume {
       @apply bg-transparent;
+    }
+
+    footer {
+      position: fixed;
+      bottom: 30px;
+      width: calc(100% - 70px);
+      text-align: center;
     }
 
     html {

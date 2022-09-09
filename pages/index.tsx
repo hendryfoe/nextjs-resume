@@ -31,8 +31,8 @@ const Home: NextPage<{ resume: Record<string, any> }> = ({ resume }) => {
         <meta name="description" content="My Resume" />
         <link rel="icon" href="/favicon.ico" />
       </Head>
-      <div id="resume" className="w-[210mm] min-h-[297mm] mx-auto mt-10 border-stone-300 print:block bg-white">
-        <div className="relative z-10 px-1">
+      <div id="resume" className="w-[210mm] py-9 mx-auto border-stone-300 print:block bg-white">
+        <div className="relative z-10 px-10">
           <section className="mb-4 top-0">
             <h1 className="text-4xl font-bold mb-1.5">{contact.name}</h1>
             <div className="flex text-xs font-semibold gap-14">
@@ -69,7 +69,7 @@ const Home: NextPage<{ resume: Record<string, any> }> = ({ resume }) => {
                           experience.companyName
                         )}
                       </h4>
-                      <div className="flex gap-1 text-xs text-gray-500 items-center py-0.5">
+                      <div className="flex gap-1 text-xs text-slate-500 items-center py-0.5">
                         <AiOutlineCalendar />
                         <span>{experience.workingPeriod}</span>
                       </div>
@@ -128,6 +128,10 @@ const Home: NextPage<{ resume: Record<string, any> }> = ({ resume }) => {
               )}
             </section>
           </section>
+          <footer className="text-center text-sm text-gray-500 py-1 border border-dashed border-gray-400 mt-10">
+            Generate with{' '}
+            <a href="https://github.com/hendryfoe/nextjs-resume">https://github.com/hendryfoe/nextjs-resume</a>
+          </footer>
         </div>
       </div>
     </div>
