@@ -1,0 +1,38 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html {
+    font-family: 'Open Sans', sans-serif;
+    font-size: 14px;
+  }
+
+  body {
+    @apply bg-slate-200;
+  }
+
+  @media not print {
+    #resume {
+      background-image: url('/bg-default.svg');
+    }
+  }
+
+  @media print {
+    body,
+    #resume {
+      @apply bg-transparent;
+    }
+
+    footer {
+      position: fixed;
+      bottom: 30px;
+      width: calc(100% - 70px);
+      text-align: center;
+    }
+
+    html {
+      background-image: url('/bg-default.svg');
+    }
+  }
+}
