@@ -1,34 +1,90 @@
-This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+# Minimalist Resume
+
+## Build with
+
+- [NextJS](https://nextjs.org)
+- [Tailwind](https://tailwindcss.com/)
+- [zod](https://zod.dev/)
+- [Puppeteer](https://pptr.dev/) + [Chrome AWS Lambda](https://github.com/alixaxel/chrome-aws-lambda)
+- [pNpm](https://pnpm.io/)
+
+---
 
 ## Getting Started
 
-First, run the development server:
+- Run `pnpm install` in the terminal
+- Clone `.env.example` and rename to `.env.local`
+- Clone `lib/data/.resume.example.json` and rename `.resume.example.json` to `resume.json` (without prefix `.`(dot))
+- You can edit the content of `resume.json` to match with your resume
+- Run `pnpm dev` in the terminal
+- Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+- To preview real data in a resume, click `Preview` button and input the `password`
+  - `password` must be same with `env.API_AUTHENTICATION_KEY`
+- To generate `.pdf` file, click `Download` button and input the `password` or go to [http://localhost:3000/api/pdf](http://localhost:3000/api/pdf)
+  - `password` must be same with `env.API_AUTHENTICATION_KEY`
 
-```bash
-npm run dev
-# or
-yarn dev
+There are 2 behaviors between `development` and `production`:
+
+1. In `development`, Resume Content is generated from `resume.json`
+2. In `production`, Resume Content is generated from `external resource API`<br />
+   (e.g: from `gist.github.com` or your other secret API) and must be comply with [Resume Content Schema](#resume-content-schema)
+
+---
+
+## Resume Content Schema
+
+Default schema is
+
+```javascript
+const schema = z.object({
+  contact: z.object({
+    firstName: z.string(),
+    lastName: z.string(),
+    phone: z.string(),
+    email: z.string(),
+    linkedin: z.string(),
+    summary: z.string()
+  }),
+  experiences: z.array(
+    z.object({
+      companyName: z.string(),
+      companyWebsite: z.string(),
+      title: z.string(),
+      workingPeriod: z.string(),
+      descriptions: z.array(z.string())
+    })
+  ),
+  technicalSkills: z.array(z.string()),
+
+  // "educations" is optional
+  educations: z.array(z.object({ schoolName: z.string(), major: z.string(), year: z.string() })).optional(),
+
+  // "projects" is optional
+  projects: z.array(z.object({ name: z.string(), description: z.string() })).optional()
+});
 ```
-
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
-
-You can start editing the page by modifying `pages/index.tsx`. The page auto-updates as you edit the file.
-
-[API routes](https://nextjs.org/docs/api-routes/introduction) can be accessed on [http://localhost:3000/api/hello](http://localhost:3000/api/hello). This endpoint can be edited in `pages/api/hello.ts`.
-
-The `pages/api` directory is mapped to `/api/*`. Files in this directory are treated as [API routes](https://nextjs.org/docs/api-routes/introduction) instead of React pages.
-
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js/) - your feedback and contributions are welcome!
 
 ## Deploy on Vercel
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+```bash
+# [mandatory]
+# Proteced `/api/pdf` endpoint
+API_AUTHENTICATION_KEY=xxxx-xxxx-xxxx
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/deployment) for more details.
+# [optional]
+# This obscures resume data to be shown
+OBSCURE_KEYS=contact;experiences;educations;technicalSkills;projects
+
+# [mandatory]
+# - "NODE_ENV" is "production"
+# - Resume Content will be filled based on the JSON response from this URL
+# - Must comply with the schema
+# - For free of charge, you can put the json on "gist.github.com", the example can be found in the ".env.example" file
+RESUME_CONTENT_URL=http://test.com
+```
+
+---
+
+## Preview
+
+![preview](example-preview.png)
