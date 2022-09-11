@@ -1,41 +1,63 @@
+import { deepCopy, obscureData } from 'lib/utils/utils';
 import type { GetServerSideProps, NextPage } from 'next';
 import { useRouter } from 'next/router';
 import { useState } from 'react';
 import { AiOutlineLinkedin, AiOutlineMail, AiTwotonePhone, AiOutlineCalendar } from 'react-icons/ai';
 import { z } from 'zod';
 
-interface Experience {
-  companyName: string;
-  companyWebsite: string;
-  title: string;
-  workingPeriod: string;
-  descriptions: ReadonlyArray<string>;
-}
+const schema = z.object({
+  contact: z.object({
+    firstName: z.string(),
+    lastName: z.string(),
+    phone: z.string(),
+    email: z.string(),
+    linkedin: z.string(),
+    summary: z.string()
+  }),
+  experiences: z.array(
+    z.object({
+      companyName: z.string(),
+      companyWebsite: z.string(),
+      title: z.string(),
+      workingPeriod: z.string(),
+      descriptions: z.array(z.string())
+    })
+  ),
+  educations: z.array(z.object({ schoolName: z.string(), major: z.string(), year: z.string() })).optional(),
+  technicalSkills: z.array(z.string()),
+  projects: z.array(z.object({ name: z.string(), description: z.string() })).optional()
+});
 
-interface Education {
-  schoolName: string;
-  major: string;
-  year: string;
-}
-
-interface Project {
-  name: string;
-  description: string;
-}
-
-const Home: NextPage<{ resume: Record<string, any> }> = ({ resume }) => {
+const Home: NextPage<{ resume: z.infer<typeof schema>; aa: any }> = ({ resume, aa }) => {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const { contact, experiences, educations, technicalSkills, projects } = resume;
 
   function handleDownload() {
-    setLoading(true);
-    router.push('/api/pdf');
+    const password = window.prompt('Input password');
+    if (password != null && password !== '') {
+      setLoading(true);
+      router.push(`/api/pdf?p=${password}`);
+    }
+  }
+
+  function handlePreview() {
+    const password = window.prompt('Input password');
+    if (password != null && password !== '') {
+      window.location.href = `/?p=${password}`;
+    }
   }
 
   return (
     <div className="w-full">
-      <div className="w-[210mm] py-3 mb-3 mx-auto border-stone-300 print:hidden">
+      <div className="w-[210mm] py-3 mb-3 mx-auto border-stone-300 flex gap-2 print:hidden">
+        <button
+          onClick={handlePreview}
+          disabled={loading}
+          className="bg-blue-500 hover:bg-blue-700 text-white font-semi py-2 px-4 rounded w-full transition-all disabled:bg-blue-700"
+        >
+          Preview
+        </button>
         <button
           onClick={handleDownload}
           disabled={loading}
@@ -47,7 +69,9 @@ const Home: NextPage<{ resume: Record<string, any> }> = ({ resume }) => {
       <div id="resume" className="w-[210mm] py-9 mx-auto border-stone-300 print:block bg-white">
         <div className="relative z-10 px-10">
           <section className="mb-4 top-0">
-            <h1 className="text-4xl font-bold mb-1.5">{contact.name}</h1>
+            <h1 className="text-4xl font-bold mb-1.5">
+              {contact.firstName} {contact.lastName}
+            </h1>
             <div className="flex text-xs font-semibold gap-14">
               <a href={'tel:' + contact.phone.replace(/\s/g, '')} className="flex items-center gap-1.5">
                 <AiTwotonePhone className="text-blue-500" />
@@ -72,7 +96,7 @@ const Home: NextPage<{ resume: Record<string, any> }> = ({ resume }) => {
               <section className="text-sm space-y-1">
                 <h2 className="text-2xl font-bold border-b-2 border-black text-black">PROFESSIONAL EXPERIENCE</h2>
                 <div className="divide-y divide-dashed divide-slate-300 flex flex-col">
-                  {experiences.map((experience: Experience, index: number) => (
+                  {experiences.map((experience, index: number) => (
                     <section key={index} className="first:pt-0 py-3">
                       <h3 className="text-xl font-semibold">{experience.title}</h3>
                       <h4 className="font-semibold text-blue-500">
@@ -99,7 +123,7 @@ const Home: NextPage<{ resume: Record<string, any> }> = ({ resume }) => {
                 <section className="text-sm space-y-1">
                   <h2 className="text-2xl font-bold border-b-2 border-black text-black">EDUCATION</h2>
                   <div className="divide-y divide-dashed divide-slate-300 flex flex-col">
-                    {educations.map((education: Education, index: number) => (
+                    {educations.map((education, index: number) => (
                       <section key={index}>
                         <h3 className="text-xl font-semibold">{education.major}</h3>
                         <h4 className="font-semibold text-blue-500">
@@ -132,7 +156,7 @@ const Home: NextPage<{ resume: Record<string, any> }> = ({ resume }) => {
                 <section className="text-sm space-y-1">
                   <h2 className="text-2xl font-bold border-b-2 border-black text-black">PROJECTS</h2>
                   <div className="divide-y space-y-1 divide-dashed divide-slate-300">
-                    {projects.map((project: Project) => (
+                    {projects.map((project) => (
                       <section key={project.name} className="first:pt-0 py-3">
                         <h2 className="font-semibold text-base text-blue-500">{project.name}</h2>
                         <p className="mr-2">{project.description}</p>
@@ -154,6 +178,8 @@ const Home: NextPage<{ resume: Record<string, any> }> = ({ resume }) => {
 };
 
 export const getServerSideProps: GetServerSideProps = async (context) => {
+  const password = context.query.p;
+
   if (process.env.NODE_ENV === 'production') {
     const resumeDataEndpoint = process.env.RESUME_CONTENT_URL;
 
@@ -166,58 +192,48 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
       throw new Error(`Endpoint "${resumeDataEndpoint}" is not valid!`);
     }
     const result = await response.json();
-    const { success } = validateSchema(result);
+
+    const { success } = schema.safeParse(result);
 
     if (!success) {
       throw new Error(`Invalid Schema, please check response from "${resumeDataEndpoint}" !`);
     }
 
+    let resume = deepCopy(result);
+
+    if (password !== process.env.API_AUTHENTICATION_KEY) {
+      const obscureKeys = process.env.OBSCURE_KEYS;
+      resume = obscureData(resume, obscureKeys.split(';'));
+    }
+
     return {
       props: {
-        resume: result
+        resume
       }
     };
   } else {
     const resumeData = require('../../lib/data/resume.json');
 
-    const { success } = validateSchema(resumeData);
+    const result = schema.safeParse(resumeData);
 
-    if (!success) {
+    if (!result.success) {
+      console.log(result.error.format());
       throw new Error(`Invalid Schema, please check "lib/data/resume.json" !`);
+    }
+
+    let resume = deepCopy(resumeData);
+
+    if (password !== process.env.API_AUTHENTICATION_KEY) {
+      const obscureKeys = process.env.OBSCURE_KEYS;
+      resume = obscureData(resume, obscureKeys.split(';'));
     }
 
     return {
       props: {
-        resume: resumeData
+        resume
       }
     };
   }
 };
-
-function validateSchema(data: any) {
-  const schema = z.object({
-    contact: z.object({
-      name: z.string(),
-      phone: z.string(),
-      email: z.string(),
-      linkedin: z.string(),
-      summary: z.string()
-    }),
-    experiences: z.array(
-      z.object({
-        companyName: z.string(),
-        companyWebsite: z.string(),
-        title: z.string(),
-        workingPeriod: z.string(),
-        descriptions: z.array(z.string())
-      })
-    ),
-    educations: z.array(z.object({ schoolName: z.string(), major: z.string(), year: z.string() })).optional(),
-    technicalSkills: z.array(z.string()),
-    projects: z.array(z.object({ name: z.string(), description: z.string() })).optional()
-  });
-
-  return schema.safeParse(data);
-}
 
 export default Home;

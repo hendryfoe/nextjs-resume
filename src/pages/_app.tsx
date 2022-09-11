@@ -19,7 +19,6 @@ function MyApp({ Component, pageProps }: AppProps) {
   const router = useRouter();
 
   useEffect(() => {
-    console.log('qweqweqwe');
     router.events.on('routeChangeStart', handleStart);
     router.events.on('routeChangeComplete', handleStop);
     router.events.on('routeChangeError', handleStop);

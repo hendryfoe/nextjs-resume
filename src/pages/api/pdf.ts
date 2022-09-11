@@ -11,8 +11,10 @@ type Data = {
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse<Data>) {
   const requestMethod = req.method?.toUpperCase();
+  const password = req.query.p;
+  const apiKey = process.env.API_AUTHENTICATION_KEY;
 
-  if (requestMethod !== 'GET' && requestMethod !== 'POST') {
+  if ((requestMethod !== 'GET' && requestMethod !== 'POST') || apiKey === '' || password !== apiKey) {
     return res.status(401).json({
       message: 'Unauthorized'
     });
@@ -42,7 +44,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
     };
   }
 
-  const endpoint = `${protocol}${req.headers.host!}`;
+  const endpoint = `${protocol}${req.headers.host!}?p=${password}`;
 
   try {
     const browser = await puppeteer.launch(options);
@@ -51,9 +53,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
     const pdfBuffer = await page.pdf({ format: 'a4', printBackground: true });
     await browser.close();
 
-    res.write(pdfBuffer, 'binary');
+    // res.write(pdfBuffer, 'binary');
     // res.setHeader('Content-disposition', 'attachment; filename=resume.pdf');
-    res.end();
+    res.end(pdfBuffer);
   } catch (error) {
     if (error instanceof Error) {
       return res.status(500).json({

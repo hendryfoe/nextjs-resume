@@ -1,6 +1,7 @@
 {
   "contact": {
-    "name": "John Doe",
+    "firstName": "John",
+    "lastName": "Doe",
     "phone": "+1 123 456 789",
     "email": "johndoe@mail.com",
     "linkedin": "https://www.linkedin.com/in/johndoe",
