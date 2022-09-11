@@ -9,10 +9,11 @@ type Data = {
   message: string;
 };
 
+const apiKey = process.env.API_AUTHENTICATION_KEY;
+
 export default async function handler(req: NextApiRequest, res: NextApiResponse<Data>) {
   const requestMethod = req.method?.toUpperCase();
   const password = req.query.p;
-  const apiKey = process.env.API_AUTHENTICATION_KEY;
 
   if ((requestMethod !== 'GET' && requestMethod !== 'POST') || apiKey === '' || password !== apiKey) {
     return res.status(401).json({

@@ -1,9 +1,10 @@
-import { deepCopy, obscureData } from 'lib/utils/utils';
 import type { GetServerSideProps, NextPage } from 'next';
 import { useRouter } from 'next/router';
 import { useState } from 'react';
 import { AiOutlineLinkedin, AiOutlineMail, AiTwotonePhone, AiOutlineCalendar } from 'react-icons/ai';
 import { z } from 'zod';
+
+import { deepCopy, obscureData } from '@/utils/utils';
 
 const schema = z.object({
   contact: z.object({
@@ -177,12 +178,15 @@ const Home: NextPage<{ resume: z.infer<typeof schema>; aa: any }> = ({ resume, a
   );
 };
 
+const obscureKeys = process.env.OBSCURE_KEYS;
+const apiKey = process.env.API_AUTHENTICATION_KEY;
+const resumeDataEndpoint = process.env.RESUME_CONTENT_URL;
+
 export const getServerSideProps: GetServerSideProps = async (context) => {
   const password = context.query.p;
+  let resume;
 
   if (process.env.NODE_ENV === 'production') {
-    const resumeDataEndpoint = process.env.RESUME_CONTENT_URL;
-
     if (resumeDataEndpoint == null || resumeDataEndpoint === '') {
       throw new Error('"RESUME_CONTENT_URL" is not valid!');
     }
@@ -191,26 +195,16 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
     if (!response.ok) {
       throw new Error(`Endpoint "${resumeDataEndpoint}" is not valid!`);
     }
-    const result = await response.json();
+    const resumeData = await response.json();
 
-    const { success } = schema.safeParse(result);
+    const result = schema.safeParse(resumeData);
 
-    if (!success) {
+    if (!result.success) {
+      console.log(result.error.format());
       throw new Error(`Invalid Schema, please check response from "${resumeDataEndpoint}" !`);
     }
 
-    let resume = deepCopy(result);
-
-    if (password !== process.env.API_AUTHENTICATION_KEY) {
-      const obscureKeys = process.env.OBSCURE_KEYS;
-      resume = obscureData(resume, obscureKeys.split(';'));
-    }
-
-    return {
-      props: {
-        resume
-      }
-    };
+    resume = deepCopy(resumeData);
   } else {
     const resumeData = require('../../lib/data/resume.json');
 
@@ -221,19 +215,18 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
       throw new Error(`Invalid Schema, please check "lib/data/resume.json" !`);
     }
 
-    let resume = deepCopy(resumeData);
-
-    if (password !== process.env.API_AUTHENTICATION_KEY) {
-      const obscureKeys = process.env.OBSCURE_KEYS;
-      resume = obscureData(resume, obscureKeys.split(';'));
-    }
-
-    return {
-      props: {
-        resume
-      }
-    };
+    resume = deepCopy(resumeData);
   }
+
+  if (password !== apiKey) {
+    resume = obscureData(resume, obscureKeys.split(';'));
+  }
+
+  return {
+    props: {
+      resume
+    }
+  };
 };
 
 export default Home;
