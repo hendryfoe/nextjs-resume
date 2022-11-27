@@ -42,7 +42,8 @@ const schema = z.object({
     lastName: z.string(),
     phone: z.string(),
     email: z.string(),
-    linkedin: z.string(),
+    linkedin: z.string().optional(),
+    github: z.string().optional(),
     summary: z.string()
   }),
   experiences: z.array(
@@ -54,12 +55,8 @@ const schema = z.object({
       descriptions: z.array(z.string())
     })
   ),
+  educations: z.array(z.object({ schoolName: z.string(), major: z.string(), year: z.string().optional() })).optional(),
   technicalSkills: z.array(z.string()),
-
-  // "educations" is optional
-  educations: z.array(z.object({ schoolName: z.string(), major: z.string(), year: z.string() })).optional(),
-
-  // "projects" is optional
   projects: z.array(z.object({ name: z.string(), description: z.string() })).optional()
 });
 ```

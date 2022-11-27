@@ -92,6 +92,6 @@ export function obscureData(payload: Record<string, any>, obscureKeys: string | 
   return payload;
 }
 
-export function deepCopy(value: any) {
+export function cloneDeep(value: any) {
   return JSON.parse(JSON.stringify(value));
 }

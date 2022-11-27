@@ -1,10 +1,10 @@
 import type { GetServerSideProps, NextPage } from 'next';
 import { useRouter } from 'next/router';
 import { useState } from 'react';
-import { AiOutlineLinkedin, AiOutlineMail, AiTwotonePhone, AiOutlineCalendar } from 'react-icons/ai';
+import { AiOutlineLinkedin, AiOutlineMail, AiTwotonePhone, AiOutlineCalendar, AiOutlineGithub } from 'react-icons/ai';
 import { z } from 'zod';
 
-import { deepCopy, obscureData } from '@/utils/utils';
+import { cloneDeep, obscureData } from '@/utils/utils';
 
 const schema = z.object({
   contact: z.object({
@@ -12,7 +12,8 @@ const schema = z.object({
     lastName: z.string(),
     phone: z.string(),
     email: z.string(),
-    linkedin: z.string(),
+    linkedin: z.string().optional(),
+    github: z.string().optional(),
     summary: z.string()
   }),
   experiences: z.array(
@@ -24,15 +25,66 @@ const schema = z.object({
       descriptions: z.array(z.string())
     })
   ),
-  educations: z.array(z.object({ schoolName: z.string(), major: z.string(), year: z.string() })).optional(),
+  educations: z.array(z.object({ schoolName: z.string(), major: z.string(), year: z.string().optional() })).optional(),
   technicalSkills: z.array(z.string()),
   projects: z.array(z.object({ name: z.string(), description: z.string() })).optional()
 });
 
-const Home: NextPage<{ resume: z.infer<typeof schema>; aa: any }> = ({ resume, aa }) => {
+const obscureKeys = process.env.OBSCURE_KEYS;
+const apiKey = process.env.API_AUTHENTICATION_KEY;
+const resumeDataEndpoint = process.env.RESUME_CONTENT_URL;
+
+export const getServerSideProps: GetServerSideProps = async (context) => {
+  const password = context.query.p;
+  let resume;
+
+  if (process.env.NODE_ENV === 'production') {
+    if (resumeDataEndpoint == null || resumeDataEndpoint === '') {
+      throw new Error('"RESUME_CONTENT_URL" is not valid!');
+    }
+
+    const response = await fetch(resumeDataEndpoint);
+    if (!response.ok) {
+      throw new Error(`Endpoint "${resumeDataEndpoint}" is not valid!`);
+    }
+    const resumeData = await response.json();
+
+    const result = schema.safeParse(resumeData);
+
+    if (!result.success) {
+      console.log(result.error.format());
+      throw new Error(`Invalid Schema, please check response from "${resumeDataEndpoint}" !`);
+    }
+
+    resume = cloneDeep(resumeData);
+  } else {
+    const resumeData = require('../../lib/data/resume.json');
+
+    const result = schema.safeParse(resumeData);
+
+    if (!result.success) {
+      console.log(result.error.format());
+      throw new Error(`Invalid Schema, please check "lib/data/resume.json" !`);
+    }
+
+    resume = cloneDeep(resumeData);
+  }
+
+  if (process.env.NODE_ENV === 'production' && password !== apiKey) {
+    resume = obscureData(resume, obscureKeys.split(';'));
+  }
+
+  return {
+    props: {
+      resume
+    }
+  };
+};
+
+const Home: NextPage<{ resume: z.infer<typeof schema> }> = (props) => {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
-  const { contact, experiences, educations, technicalSkills, projects } = resume;
+  const { contact, experiences, educations, technicalSkills, projects } = props.resume;
 
   function handleDownload() {
     const password = window.prompt('Input password');
@@ -69,11 +121,11 @@ const Home: NextPage<{ resume: z.infer<typeof schema>; aa: any }> = ({ resume, a
       </div>
       <div id="resume" className="w-[210mm] py-9 mx-auto border-stone-300 print:block bg-white">
         <div className="relative z-10 px-10">
-          <section className="mb-4 top-0">
+          <section className="mb-5 top-0">
             <h1 className="text-4xl font-bold mb-1.5">
               {contact.firstName} {contact.lastName}
             </h1>
-            <div className="flex text-xs font-semibold gap-14">
+            <div className="flex text-xs font-semibold gap-x-6 gap-y-2 flex-wrap">
               <a href={'tel:' + contact.phone.replace(/\s/g, '')} className="flex items-center gap-1.5">
                 <AiTwotonePhone className="text-blue-500" />
                 <span>{contact.phone}</span>
@@ -82,10 +134,18 @@ const Home: NextPage<{ resume: z.infer<typeof schema>; aa: any }> = ({ resume, a
                 <AiOutlineMail className="text-blue-500" />
                 <span>{contact.email}</span>
               </a>
-              <a href={contact.linkedin} className="flex items-center gap-1.5">
-                <AiOutlineLinkedin className="text-blue-500" />
-                <span>{contact.linkedin}</span>
-              </a>
+              {contact.linkedin && (
+                <a href={contact.linkedin} className="flex items-center gap-1.5">
+                  <AiOutlineLinkedin className="text-blue-500" />
+                  <span>{contact.linkedin}</span>
+                </a>
+              )}
+              {contact.github && (
+                <a href={contact.github} className="flex items-center gap-1.5">
+                  <AiOutlineGithub className="text-blue-500" />
+                  <span>{contact.github}</span>
+                </a>
+              )}
             </div>
           </section>
           <section className="flex gap-5">
@@ -130,10 +190,12 @@ const Home: NextPage<{ resume: z.infer<typeof schema>; aa: any }> = ({ resume, a
                         <h4 className="font-semibold text-blue-500">
                           <a>{education.schoolName}</a>
                         </h4>
-                        <div className="flex gap-1 text-xs text-gray-500 items-center py-0.5">
-                          <AiOutlineCalendar />
-                          <span>{education.year}</span>
-                        </div>
+                        {education.year && (
+                          <div className="flex gap-1 text-xs text-gray-500 items-center py-0.5">
+                            <AiOutlineCalendar />
+                            <span>{education.year}</span>
+                          </div>
+                        )}
                       </section>
                     ))}
                   </div>
@@ -176,57 +238,6 @@ const Home: NextPage<{ resume: z.infer<typeof schema>; aa: any }> = ({ resume, a
       </div>
     </div>
   );
-};
-
-const obscureKeys = process.env.OBSCURE_KEYS;
-const apiKey = process.env.API_AUTHENTICATION_KEY;
-const resumeDataEndpoint = process.env.RESUME_CONTENT_URL;
-
-export const getServerSideProps: GetServerSideProps = async (context) => {
-  const password = context.query.p;
-  let resume;
-
-  if (process.env.NODE_ENV === 'production') {
-    if (resumeDataEndpoint == null || resumeDataEndpoint === '') {
-      throw new Error('"RESUME_CONTENT_URL" is not valid!');
-    }
-
-    const response = await fetch(resumeDataEndpoint);
-    if (!response.ok) {
-      throw new Error(`Endpoint "${resumeDataEndpoint}" is not valid!`);
-    }
-    const resumeData = await response.json();
-
-    const result = schema.safeParse(resumeData);
-
-    if (!result.success) {
-      console.log(result.error.format());
-      throw new Error(`Invalid Schema, please check response from "${resumeDataEndpoint}" !`);
-    }
-
-    resume = deepCopy(resumeData);
-  } else {
-    const resumeData = require('../../lib/data/resume.json');
-
-    const result = schema.safeParse(resumeData);
-
-    if (!result.success) {
-      console.log(result.error.format());
-      throw new Error(`Invalid Schema, please check "lib/data/resume.json" !`);
-    }
-
-    resume = deepCopy(resumeData);
-  }
-
-  if (password !== apiKey) {
-    resume = obscureData(resume, obscureKeys.split(';'));
-  }
-
-  return {
-    props: {
-      resume
-    }
-  };
 };
 
 export default Home;
