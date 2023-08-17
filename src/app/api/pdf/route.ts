@@ -1,24 +1,16 @@
-// Next.js API route support: https://nextjs.org/docs/api-routes/introduction
-import type { NextApiRequest, NextApiResponse } from 'next';
-
 import chrome from 'chrome-aws-lambda';
 import puppeteer from 'puppeteer-core';
 
-type Data = {
-  error?: any;
-  message: string;
-};
-
 const apiKey = process.env.API_AUTHENTICATION_KEY;
 
-export default async function handler(req: NextApiRequest, res: NextApiResponse<Data>) {
-  const requestMethod = req.method?.toUpperCase();
-  const password = req.query.p;
+import { NextResponse } from 'next/server';
 
-  if ((requestMethod !== 'GET' && requestMethod !== 'POST') || apiKey === '' || password !== apiKey) {
-    return res.status(401).json({
-      message: 'Unauthorized'
-    });
+export async function GET(req: Request) {
+  const { searchParams, host } = new URL(req.url);
+  const password = searchParams.get('p');
+
+  if (apiKey === '' || password !== apiKey) {
+    return NextResponse.json({ message: 'Unauthorized' }, { status: 401, statusText: 'Unauthorized' });
   }
 
   let protocol;
@@ -45,7 +37,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
     };
   }
 
-  const endpoint = `${protocol}${req.headers.host!}?p=${password}`;
+  const endpoint = `${protocol}${host}?p=${password}`;
 
   try {
     const browser = await puppeteer.launch(options);
@@ -56,18 +48,26 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
 
     // res.write(pdfBuffer, 'binary');
     // res.setHeader('Content-disposition', 'attachment; filename=resume.pdf');
-    res.end(pdfBuffer);
+    // const headers = new Headers();
+    // headers.append('Content-disposition', 'attachment; filename=resume.pdf');
+    return new Response(pdfBuffer);
   } catch (error) {
     if (error instanceof Error) {
-      return res.status(500).json({
-        error: error.message,
-        message: error.name
-      });
+      return NextResponse.json(
+        {
+          error: error.message,
+          message: error.name
+        },
+        { status: 500 }
+      );
     }
 
-    return res.status(500).json({
-      error: JSON.stringify(error),
-      message: 'Failed'
-    });
+    return NextResponse.json(
+      {
+        error: JSON.stringify(error),
+        message: 'Failed'
+      },
+      { status: 500 }
+    );
   }
 }

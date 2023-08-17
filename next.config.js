@@ -3,5 +3,10 @@ module.exports = {
   reactStrictMode: true,
   images: {
     domains: []
+  },
+  webpack: (config, options) => {
+    config.externals.push('chrome-aws-lambda', 'puppeteer-core');
+
+    return config;
   }
 };

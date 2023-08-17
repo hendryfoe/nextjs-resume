@@ -1,9 +1,8 @@
-import type { GetServerSideProps, NextPage } from 'next';
-import { useRouter } from 'next/router';
-import { useState } from 'react';
-import { AiOutlineLinkedin, AiOutlineMail, AiTwotonePhone, AiOutlineCalendar, AiOutlineGithub } from 'react-icons/ai';
+import { AiOutlineCalendar, AiOutlineGithub, AiOutlineLinkedin, AiOutlineMail, AiTwotonePhone } from 'react-icons/ai';
 import { z } from 'zod';
 
+import { DownloadButton } from '@/components/buttons/download-button';
+import { PreviewButton } from '@/components/buttons/preview-button';
 import { cloneDeep, obscureData } from '@/utils/utils';
 
 const schema = z.object({
@@ -34,9 +33,9 @@ const obscureKeys = process.env.OBSCURE_KEYS;
 const apiKey = process.env.API_AUTHENTICATION_KEY;
 const resumeDataEndpoint = process.env.RESUME_CONTENT_URL;
 
-export const getServerSideProps: GetServerSideProps = async (context) => {
-  const password = context.query.p;
-  let resume;
+async function getData(searchParams: PageProps['searchParams']) {
+  const password = searchParams.p;
+  let resume: z.infer<typeof schema>;
 
   if (process.env.NODE_ENV === 'production') {
     if (resumeDataEndpoint == null || resumeDataEndpoint === '') {
@@ -56,7 +55,7 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
       throw new Error(`Invalid Schema, please check response from "${resumeDataEndpoint}" !`);
     }
 
-    resume = cloneDeep(resumeData);
+    resume = cloneDeep(result);
   } else {
     const resumeData = require('../../lib/data/resume.json');
 
@@ -71,53 +70,20 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
   }
 
   if (process.env.NODE_ENV === 'production' && password !== apiKey) {
-    resume = obscureData(resume, obscureKeys.split(';'));
+    resume = obscureData(resume, obscureKeys.split(';')) as typeof resume;
   }
 
-  return {
-    props: {
-      resume
-    }
-  };
-};
+  return resume;
+}
 
-const Home: NextPage<{ resume: z.infer<typeof schema> }> = (props) => {
-  const router = useRouter();
-  const [loading, setLoading] = useState(false);
-  const { contact, experiences, educations, technicalSkills, projects } = props.resume;
-
-  function handleDownload() {
-    const password = window.prompt('Input password');
-    if (password != null && password !== '') {
-      setLoading(true);
-      router.push(`/api/pdf?p=${password}`);
-    }
-  }
-
-  function handlePreview() {
-    const password = window.prompt('Input password');
-    if (password != null && password !== '') {
-      window.location.href = `/?p=${password}`;
-    }
-  }
+export default async function Page(props: PageProps) {
+  const { contact, experiences, educations, technicalSkills, projects } = await getData(props.searchParams);
 
   return (
     <div className="w-full">
       <div className="w-[210mm] py-3 mb-3 mx-auto border-stone-300 flex gap-2 print:hidden">
-        <button
-          onClick={handlePreview}
-          disabled={loading}
-          className="bg-blue-500 hover:bg-blue-700 text-white font-semi py-2 px-4 rounded w-full transition-all disabled:bg-blue-700"
-        >
-          Preview
-        </button>
-        <button
-          onClick={handleDownload}
-          disabled={loading}
-          className="bg-blue-500 hover:bg-blue-700 text-white font-semi py-2 px-4 rounded w-full transition-all disabled:bg-blue-700"
-        >
-          Download
-        </button>
+        <PreviewButton />
+        <DownloadButton />
       </div>
       <div id="resume" className="w-[210mm] py-9 mx-auto border-stone-300 print:block bg-white">
         <div className="relative z-10 px-10">
@@ -238,6 +204,4 @@ const Home: NextPage<{ resume: z.infer<typeof schema> }> = (props) => {
       </div>
     </div>
   );
-};
-
-export default Home;
+}
