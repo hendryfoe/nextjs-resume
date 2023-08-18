@@ -55,7 +55,7 @@ async function getData(searchParams: PageProps['searchParams']) {
       throw new Error(`Invalid Schema, please check response from "${resumeDataEndpoint}" !`);
     }
 
-    resume = cloneDeep(result);
+    resume = cloneDeep(result.data);
   } else {
     const resumeData = require('../../lib/data/resume.json');
 

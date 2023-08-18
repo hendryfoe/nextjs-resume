@@ -1,9 +1,12 @@
-import chrome from 'chrome-aws-lambda';
+import { NextResponse } from 'next/server';
+
+import type { LaunchOptions, BrowserLaunchArgumentOptions, BrowserConnectOptions } from 'puppeteer-core';
+
+import chromium from '@sparticuz/chromium-min';
 import puppeteer from 'puppeteer-core';
 
 const apiKey = process.env.API_AUTHENTICATION_KEY;
-
-import { NextResponse } from 'next/server';
+const chromiumExecutablePath = process.env.CHROMIUM_EXECUTABLE_PATH;
 
 export async function GET(req: Request) {
   const { searchParams, host } = new URL(req.url);
@@ -14,26 +17,31 @@ export async function GET(req: Request) {
   }
 
   let protocol;
-  let options;
+  let options: LaunchOptions & BrowserLaunchArgumentOptions & BrowserConnectOptions;
 
   // https://github.com/vercel/virtual-event-starter-kit/blob/main/lib/screenshot.ts
-  if (process.env.AWS_REGION) {
+  // https://github.com/Sparticuz/chromium/releases
+  if (process.env.AWS_REGION || process.env.NODE_ENV === 'production') {
     protocol = 'https://';
     options = {
-      args: chrome.args,
-      executablePath: await chrome.executablePath,
-      headless: chrome.headless
+      args: chromium.args,
+      // defaultViewport: chromium.defaultViewport,
+      executablePath: await chromium.executablePath(chromiumExecutablePath),
+      headless: chromium.headless as boolean,
+      ignoreHTTPSErrors: true
     };
   } else {
     protocol = 'http://';
     options = {
       args: [],
+      defaultViewport: chromium.defaultViewport,
       executablePath:
         process.platform === 'win32'
           ? 'C:\\Program Files (x86)\\Google\\Chrome\\Application\\chrome.exe'
           : process.platform === 'linux'
           ? '/usr/bin/google-chrome'
-          : '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome'
+          : '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome',
+      headless: chromium.headless as boolean
     };
   }
 
@@ -42,14 +50,13 @@ export async function GET(req: Request) {
   try {
     const browser = await puppeteer.launch(options);
     const page = await browser.newPage();
-    await page.goto(endpoint, { waitUntil: 'networkidle0' });
-    const pdfBuffer = await page.pdf({ format: 'a4', printBackground: true });
-    await browser.close();
 
-    // res.write(pdfBuffer, 'binary');
-    // res.setHeader('Content-disposition', 'attachment; filename=resume.pdf');
-    // const headers = new Headers();
-    // headers.append('Content-disposition', 'attachment; filename=resume.pdf');
+    await page.goto(endpoint, { waitUntil: 'networkidle0' });
+
+    const pdfBuffer = await page.pdf({ format: 'a4', printBackground: true });
+
+    // await browser.close();
+
     return new Response(pdfBuffer);
   } catch (error) {
     if (error instanceof Error) {
