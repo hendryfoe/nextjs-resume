@@ -5,7 +5,7 @@ module.exports = {
     domains: []
   },
   webpack: (config, options) => {
-    config.externals.push('chrome-aws-lambda', 'puppeteer-core');
+    config.externals.push('chrome-aws-lambda', 'puppeteer-core', 'playwright-core');
 
     return config;
   }

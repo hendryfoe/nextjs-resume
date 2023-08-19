@@ -18,7 +18,7 @@
     "@sparticuz/chromium-min": "^115.0.0",
     "next": "13.4.18",
     "nprogress": "^0.2.0",
-    "puppeteer-core": "21.1.0",
+    "playwright-core": "^1.37.1",
     "react": "18.2.0",
     "react-dom": "18.2.0",
     "react-icons": "^4.10.1",

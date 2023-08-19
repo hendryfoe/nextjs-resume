@@ -1,9 +1,9 @@
 import { NextResponse } from 'next/server';
 
-import type { LaunchOptions, BrowserLaunchArgumentOptions, BrowserConnectOptions } from 'puppeteer-core';
+import type { LaunchOptions } from 'playwright-core';
 
 import chromium from '@sparticuz/chromium-min';
-import puppeteer from 'puppeteer-core';
+import { chromium as playwright } from 'playwright-core';
 
 const apiKey = process.env.API_AUTHENTICATION_KEY;
 const chromiumExecutablePath = process.env.CHROMIUM_EXECUTABLE_PATH;
@@ -17,7 +17,8 @@ export async function GET(req: Request) {
   }
 
   let protocol;
-  let options: LaunchOptions & BrowserLaunchArgumentOptions & BrowserConnectOptions;
+  // let options: LaunchOptions & BrowserLaunchArgumentOptions & BrowserConnectOptions;
+  let options: LaunchOptions;
 
   // https://github.com/vercel/virtual-event-starter-kit/blob/main/lib/screenshot.ts
   // https://github.com/Sparticuz/chromium/releases
@@ -25,37 +26,38 @@ export async function GET(req: Request) {
     protocol = 'https://';
     options = {
       args: chromium.args,
-      // defaultViewport: chromium.defaultViewport,
       executablePath: await chromium.executablePath(chromiumExecutablePath),
-      headless: chromium.headless as boolean,
-      ignoreHTTPSErrors: true
+      headless: true
     };
   } else {
     protocol = 'http://';
     options = {
       args: [],
-      defaultViewport: chromium.defaultViewport,
       executablePath:
         process.platform === 'win32'
           ? 'C:\\Program Files (x86)\\Google\\Chrome\\Application\\chrome.exe'
           : process.platform === 'linux'
           ? '/usr/bin/google-chrome'
           : '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome',
-      headless: chromium.headless as boolean
+      headless: true
     };
   }
 
   const endpoint = `${protocol}${host}?p=${password}`;
 
   try {
-    const browser = await puppeteer.launch(options);
-    const page = await browser.newPage();
+    console.time('playwright-time');
+    const browser = await playwright.launch(options);
 
-    await page.goto(endpoint, { waitUntil: 'networkidle0' });
+    const context = await browser.newContext();
+    const page = await context.newPage();
+
+    await page.goto(endpoint);
 
     const pdfBuffer = await page.pdf({ format: 'a4', printBackground: true });
 
-    // await browser.close();
+    await browser.close();
+    console.timeEnd('playwright-time');
 
     return new Response(pdfBuffer);
   } catch (error) {
